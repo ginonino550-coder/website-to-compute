@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Glory Keeper – Portiere da leggenda</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #2e8b57; }
+    canvas { display: block; margin: auto; background: #4CAF50; }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let score = 0;
+let shots = [];
+let portiere = { x: 150, y: 500, width: 100, height: 20, direction: "center" };
+
+function drawField() {
+  ctx.fillStyle = "#4CAF50";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(portiere.x, portiere.y, portiere.width, portiere.height);
+  ctx.font = "20px Arial";
+  ctx.fillText("Punteggio: " + score, 10, 30);
+}
+
+function createShot() {
+  const directions = ["left", "center", "right"];
+  const dir = directions[Math.floor(Math.random() * directions.length)];
+  let x = dir === "left" ? 50 : dir === "center" ? 150 : 300;
+  shots.push({ x: x, y: 0, dir: dir });
+}
+
+function drawShots() {
+  ctx.fillStyle = "#ff0000";
+  shots.forEach(shot => {
+    ctx.beginPath();
+    ctx.arc(shot.x, shot.y, 10, 0, Math.PI * 2);
+    ctx.fill();
+    shot.y += 5;
+  });
+}
+
+function checkCollisions() {
+  shots = shots.filter(shot => {
+    if (shot.y > 500 && shot.y < 520) {
+      if (
+        (shot.dir === "left" && portiere.direction === "left") ||
+        (shot.dir === "center" && portiere.direction === "center") ||
+        (shot.dir === "right" && portiere.direction === "right")
+      ) {
+        score++;
+        return false;
+      } else {
+        score--;
+        return false;
+      }
+    }
+    return shot.y < canvas.height;
+  });
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawField();
+  drawShots();
+  checkCollisions();
+  requestAnimationFrame(gameLoop);
+}
+
+setInterval(createShot, 1500);
+gameLoop();
+
+canvas.addEventListener("touchstart", function(e) {
+  const touchX = e.touches[0].clientX;
+  if (touchX < canvas.width / 3) {
+    portiere.direction = "left";
+    portiere.x = 50;
+  } else if (touchX < (2 * canvas.width) / 3) {
+    portiere.direction = "center";
+    portiere.x = 150;
+  } else {
+    portiere.direction = "right";
+    portiere.x = 250;
+  }
+});
+</script>
+</body>
+</html>
